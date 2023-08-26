@@ -1,0 +1,195 @@
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { NextResponse } from "next/server";
+import User from "@/models/userModel";
+import bcryptjs from "bcryptjs";
+import { UsernameValidator } from "@/validations/SignUpValidations";
+import jwt from "jsonwebtoken";
+import connect from "@/dbConfig/dbConfig";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import clientPromise from "@/dbConfig/dbAdapterConfig";
+// import OAuth from "@/models/OauthModel";
+// import { data } from "autoprefixer";
+const options = {
+  adapter: MongoDBAdapter(clientPromise),
+  providers: [
+    GoogleProvider({
+      clientId: process?.env.GOOGLE_ID,
+      clientSecret: process?.env.GOOGLE_CLIENT_SECRET,
+    }),
+
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {},
+
+      async authorize(credentials) {
+        await connect();
+        if ((!credentials.Username, !credentials.Password)) {
+          throw new Error("Please provide a username and password");
+        }
+
+        const { Username, Password } = credentials;
+
+        //check for valid credentials
+        const passwordRegix =
+          /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%,*#?&])[A-Za-z\d@$!%*#?,&]{8,}$/;
+
+        //Checking for Password
+        if (!Password.match(passwordRegix)) {
+          throw new Error("Not a valid Password");
+        }
+        if (UsernameValidator(Username) !== true) {
+          throw new Error("Not a valid Username");
+        }
+        const isUserExist = await User.findOne({ username: Username });
+
+        // User Do not Exists Entirly
+        // User Does Not Have a Password (Means Google authenticated)
+        // return Error
+        // else return True
+
+        if (!isUserExist || !isUserExist?.hashedPassword) {
+          throw new Error("User does not exists");
+        }
+        //Checking if Password is Correct
+        const isPasswordCorrect = await bcryptjs.compare(
+          Password,
+          isUserExist.hashedPassword
+        );
+
+        if (!isPasswordCorrect) {
+          throw new Error("Username or password is incorrect");
+        }
+        // console.log("authorize Returned");
+        const user = {
+          id: isUserExist._id.toString(),
+          name: isUserExist.username,
+          email: isUserExist.email,
+          image: isUserExist?.image,
+        };
+        
+        return user;
+      },
+    }),
+  ],
+
+  callbacks: {
+    async signIn({ account, profile, user, credentials }) {
+      try {
+        if (account.provider === "google") {
+          const UserData = await User.findOne({ email: user.email });
+
+          if (UserData && !UserData?.oauthProviders.provider) {
+            if (!UserData.isVerified) return false;
+            await User.findByIdAndUpdate(
+              {
+                _id: UserData._id,
+              },
+              {
+                $set: {
+                  isVerified: profile.email_verified,
+                  oauthProviders: {
+                    provider: account.provider,
+                    providerId: account.providerAccountId,
+                    Tokens: {
+                      accessToken: account.access_token,
+                      refreshToken: account.id_token,
+                    },
+                  },
+                },
+              }
+            );
+          }
+          if (!UserData) {
+            console.log(
+              "User doesnt Exist, Here is the google Account:",
+              account
+            );
+            //add random Number to the Username
+            const randomNumber = Math.random().toString().slice(2, 6);
+
+            const profileName = profile.name.replace(" ", "") + randomNumber;
+
+            const NewUser = new User({
+              username: profileName,
+              email: profile.email,
+              image: profile.picture,
+              oauthProviders: {
+                provider: account.provider,
+                providerId: account.providerAccountId,
+                Tokens: {
+                  accessToken: account.access_token,
+                  refreshToken: account.id_token,
+                },
+              },
+              isverified: profile.email_verified,
+              //   isVerified:profile.email_verified,
+            });
+            await NewUser.save();
+          }
+        }
+        return true;
+      } catch (err) {
+        return err;
+      }
+    },
+    async jwt({ token, user }) {
+      try {
+        console.log("this is jwt Callback");
+        const dbUser = await User.findOne({ email: token.email });
+        // console.log("dbUser from jwt callBack :", dbUser);
+        const {
+          oauthProviders,
+          hashedPassword,
+          refreshToken,
+          forgotPasswordToken,
+          forgotPasswordTokenExpiration,
+          verifyToken,
+          verifyTokenExpiration,
+          ...other
+        } = dbUser._doc;
+        //_id: new ObjectId("64e73075f9ec2d59a5b23153"),
+        // username: 'GHOST9804',
+        // email: 'muaddemon434@gmail.com',
+        // isVerified: false,
+        // isAdmin: false,
+        // createdAt: 2023-08-24T10:27:01.377Z,
+        // updatedAt: 2023-08-24T10:27:01.377Z,
+        // token
+        // token is = {
+        //   name: 'GHOST',
+        //   email: 'muaddemon434@gmail.com',
+        //   picture: 'https://lh3.googleusercontent.com/a/AAcHTtc9rvv7M99GIWVsUhWPEdBxB0aS9lYhcs1hdXOZibdOBZg=s96-c',
+        //   sub: '108324846590214397440',
+        //   iat: 1692875055,
+        //   exp: 1695467055,
+        //   jti: '74758c9c-0e5d-4625-8902-1aa8354f54ce'
+        // }
+        token = {
+          ...token,
+          id: other._id,
+          name: other.username,
+          email: other.email,
+          picture: other.image,
+          role: other.isAdmin ? "admin" : "user",
+        };
+        return token;
+      } catch (error) {}
+    },
+    async session({ session, token }) {
+      session.user = {
+        ...session.user,
+        role: token.role,
+      };
+      return session;
+    },
+  },
+  secret: process.env.NEXT_AUTH_SECRET,
+  pages: {
+    signIn: "/login",
+    Error: "/",
+  },
+};
+
+export default options;
