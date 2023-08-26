@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 export function middleware(request) {
-  // const {data:session} = useSession();
-  // console.log(request.nextUrl)
+
   const path = request.nextUrl.pathname;
   const isAuthPath = path === "/login" || path === "/signup";
   const isPrivatePath = path === "/wishlist" || path === "/profile";
-  // console.log(request.cookies.get('next-auth.session-token'));
-  // request.cookies.get('')
-  const token = request.cookies.get("next-auth.session-token")?.value || "";
+  const token = request.cookies.get("__Secure-next-auth.session-token")?.value || "";
   if (isAuthPath && token) {
     return NextResponse.redirect(new URL("/", request.nextUrl));
   }

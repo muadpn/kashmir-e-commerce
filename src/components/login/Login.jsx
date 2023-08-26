@@ -56,12 +56,6 @@ const Login = () => {
       return;
     }
     try {
-      // const res = await axios.post("/api/auth/login", { FormData });
-      // if (res.status === 200) {
-
-      //     toast.success("Login Sucessfull", {
-      //       position: "top-center",
-      //     });
       signIn("credentials", { ...FormData, redirect: false }).then(
         (callback) => {
           if (callback?.error) {
