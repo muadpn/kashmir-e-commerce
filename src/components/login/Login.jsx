@@ -65,7 +65,7 @@ const Login = () => {
       signIn("credentials", { ...FormData, redirect: false }).then(
         (callback) => {
           if (callback?.error) {
-            console.log(callback?.error);
+            // console.log(callback?.error);
             toast.error(callback.error);
           }
           if (callback?.ok && !callback.error) {
@@ -79,7 +79,7 @@ const Login = () => {
       // router.push('/store')
       // }, [200]);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error(error?.response?.data, {
         position: "top-center",
       });

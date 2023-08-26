@@ -60,7 +60,7 @@ export async function POST(request) {
     // console.log("This is From Backend",response)
     return response;
   } catch (error) {
-    console.log("THIS IS ERROR!", error);
+    // console.log("THIS IS ERROR!", error);
     return NextResponse.json({ error: error.message, status: 500 });
   }
 }

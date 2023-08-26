@@ -106,7 +106,7 @@ export async function POST(request) {
       { status: 400 }
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }

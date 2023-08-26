@@ -81,7 +81,7 @@ const options = {
     async signIn({ account, profile, user, credentials }) {
 
       try {
-        console.log(profile.picture);
+        // console.log(profile.picture);
         const UserData = await User.findOne({ email: user.email });
           if(account.provider !=='google' && !UserData.isVerified) {
             return '/login?Message=Please Verify your account And try Again'
@@ -115,10 +115,10 @@ const options = {
             );
           }
           if (!UserData) {
-            console.log(
-              "User doesnt Exist, Here is the google Account:",
-              account
-            );
+            // console.log(
+            //   "User doesnt Exist, Here is the google Account:",
+            //   account
+            // );
             //add random Number to the Username
             const randomNumber = Math.random().toString().slice(2, 6);
             const profileName = profile.name.replace(" ", "") + randomNumber;

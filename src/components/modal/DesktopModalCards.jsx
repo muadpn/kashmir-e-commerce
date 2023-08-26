@@ -11,11 +11,11 @@ const DesktopModalCards = ({ title, image, options, IsSignout }) => {
   const router = useRouter();
   const HandleSignOut = async () => {
     try {
-      signOut();
+     await signOut({redirect:false,callbackUrl:process.env.NEXTAUTH_URL});
       toast.success("Logged Out");
-      // setTimeout(() => {
+      setTimeout(() => {
         router.push("/store");
-      // }, [200]);
+      }, [500]);
     } catch (error) {
       console.log(error);
     }
