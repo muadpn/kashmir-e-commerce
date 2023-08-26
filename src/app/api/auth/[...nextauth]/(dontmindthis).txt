@@ -81,7 +81,7 @@ const options = {
           const UserData = await User.findOne({ email: user.email });
 
           if (UserData && !UserData?.oauthProviders.provider) {
-            if (!UserData.isVerified) return false;
+            if (!UserData?.isVerified) return false;
             await User.findByIdAndUpdate(
               {
                 _id: UserData._id,

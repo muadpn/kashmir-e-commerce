@@ -41,8 +41,9 @@ const options = {
         }
         
         const isUserExist = await User.findOne({ email: Email });
+        if(!isUserExist) throw new Error("User Does Not Exist");
 
-        if(!isUserExist.isVerified) throw new Error("Please Verify the Email Address");
+        if(!isUserExist?.isVerified) throw new Error("Please Verify the Email Address");
         
         // User Do not Exists Entirly
         // User Does Not Have a Password (Means Google authenticated)
@@ -64,11 +65,11 @@ const options = {
 
         // console.log("authorize Returned");
         const user = {
-          id: isUserExist._id.toString(),
-          name: isUserExist.username,
-          email: isUserExist.email,
+          id: isUserExist?._id.toString(),
+          name: isUserExist?.username,
+          email: isUserExist?.email,
           image: isUserExist?.image,
-          role: isUserExist.isAdmin ? "admin" : "user" 
+          role: isUserExist?.isAdmin ? "admin" : "user" 
         };
         
         return user;
@@ -83,14 +84,14 @@ const options = {
       try {
         // console.log(profile.picture);
         const UserData = await User.findOne({ email: user.email });
-          if(account.provider !=='google' && !UserData.isVerified) {
+          if(account.provider !=='google' && !UserData?.isVerified) {
             return '/login?Message=Please Verify your account And try Again'
           }
 
 
-        if (account.provider === "google") {
+        if (account?.provider === "google") {
           
-          if(!profile.email_verified)  return '/login?Message=Please Verify your account And try Again'
+          if(!profile?.email_verified)  return '/login?Message=Please Verify your account And try Again'
           if (UserData) {
             await User.findByIdAndUpdate(
               {
