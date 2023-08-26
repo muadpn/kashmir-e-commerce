@@ -1,5 +1,5 @@
-type FeatureType = {
-  title: string;
-  Discription : string;
-  images: string[];
-};
+// type FeatureType = {
+//   title: string;
+//   Discription : string;
+//   images: string[];
+// };

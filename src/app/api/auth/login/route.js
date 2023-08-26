@@ -7,7 +7,7 @@ import bcryptjs from "bcryptjs";
 import { UsernameValidator } from "@/validations/SignUpValidations";
 import jwt from "jsonwebtoken";
 
-import { connect } from "@/dbConfig/dbConfig";
+import  connect  from "@/dbConfig/dbConfig";
 import { signIn } from "next-auth/react";
 
 

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { useSession } from "next-auth/react";
 export function middleware(request) {
   // const {data:session} = useSession();
   // console.log(request.nextUrl)
