@@ -1,16 +1,12 @@
-// import { getServerSession } from 'next-auth'
-import HeroContainer from '@/container/HeroContainer'
 import React from 'react'
-// import options from '../api/auth/[...nextauth]/option'
-
 const StorePage = () => {
-  // const session = getServerSession(options)
-  // console.log(session)
+  
   return (
-    <>
-    <h1>WOW</h1>
-    </>
+   <div>
+    <h1>WELCOME TO STORE PAGE</h1>
+    <h1>THIS PAGE IS CURRENTLY IN DEVELOPMENT</h1>
+   </div>
   )
 }
 
-export default StorePage
+export default StorePage;
